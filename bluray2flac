@@ -1,0 +1,229 @@
+#!/bin/bash
+# $Author:$
+# $Log:$
+
+set -o posix
+
+# TRACE == 0 for debugging
+trace=1
+
+# from libbluray
+MPLS_DUMP=$HOME/src/libbluray/.libs/mpls_dump
+
+# trackscalpel
+TRACKSCALPEL=trackscalpel
+
+# to prevent some locale issues
+export LC_ALL=C.UTF-8
+
+# ffmpeg
+FFMPEG='/usr/bin/ffmpeg -loglevel 16'
+
+# where are your bluray files
+BDMV=$1
+
+if ! test -d "${BDMV}"/PLAYLIST; then
+    echo "Directory "${BDMV}"/PLAYLIST doesn't exist!"
+    echo "Usage "$0": path_to_bdmv"
+    exit 1
+fi
+if ((trace)); then
+   echo "Debug: (start)"
+fi
+
+# output dir
+OUTDIR=$(dirname "$BDMV")/bluray2flac
+LOGFILE=$OUTDIR/log.txt
+
+if ! test -d "$OUTDIR"; then
+    mkdir "$OUTDIR"
+fi
+echo "All new files will be in "$OUTDIR
+
+# find longest sequences in MPLS
+check=1
+stack=1
+while :
+do
+    MPLS=$(for i in "${BDMV}"/PLAYLIST/*.mpls; do ${MPLS_DUMP} -v "$i" | head -1 ; done | sort -rn -k 9 | sed -n ${stack}p | cut -d- -f 1 | sed -e 's/ //g')
+    if ((trace)); then
+	echo "Debug: MPLS file is: "$MPLS
+    fi
+    MPLSFILE="${BDMV}"/PLAYLIST/$MPLS
+    MPLSCHECK=$(${MPLS_DUMP} -vl "$MPLSFILE" | grep m2ts | sort | uniq -c)
+    MPLSNB=$(wc -l <<< $MPLSCHECK)
+    MPLSCNT=$(echo $MPLSCHECK | tr -s ' ' | cut -d ' ' -f 1)
+    if (( MPLSNB==1 && MPLSCNT>3 )); then
+	MPLSFILE=""
+	echo "Warning: MPLS file is suspect, trying next one"
+	stack=$((stack+1))
+	if ((stack > 20)); then
+	    break;
+	fi
+    else
+	break
+    fi
+done
+if ! test -f "$MPLSFILE"; then
+    echo "Coudn't find best MPLS file ("$MPLSFILE")!"
+    exit 1
+fi
+
+# extract in order all m2ts from the MPLS file
+M2TS=$($MPLS_DUMP -vl "$MPLSFILE" | grep -o -e '[[:space:]]*[0-9]*[.]m2ts')
+if ((trace)); then
+   echo "Debug: M2TS"$M2TS
+fi
+if test -z "$M2TS"; then
+    echo "Coun't extract list of M2TS files!"
+    exit 1
+fi
+echo "Longest mpls is " $MPLS " with " $M2TS "files."
+
+# for each m2ts, extract audio only
+for i in `echo -n $M2TS`; do
+    FLAC=${i%.m2ts}.flac
+    # select stream with most channels
+    channels=$(ffprobe "$BDMV"/STREAM/$i 2>&1 | grep -e Stream | grep -e Audio | cut -d, -f 3 | sed -e 's/ //g')
+    if ((trace)); then
+	echo "Debug: channels "$channels
+    fi
+    # maxchannels max number of channels (the one we want to extract)
+    maxchannels=0
+    # maxname: name of the topology
+    maxname=""
+    for c in $channels; do
+	nbchannels=0
+	case "$c" in
+	    "stereo")
+		nbchannels=2
+		;;
+            "5.0(side)")
+	        nbchannels=5
+		;;
+	    "5.1(side)")
+		nbchannels=6
+		;;
+	    "7.1")
+		nbchannels=8
+		;;
+	    "7.1(side)")
+		nbchannels=8
+		;;
+	    "9.1(side)")
+		nbchannels=10
+		;;
+	    *)
+		echo "Warning found an unkown channel topology: "$c
+		exit 1
+	esac
+	if ((trace)); then
+	    echo -n "Debug: Current #channel="$nbchannels " topology: "$c
+	    echo -n
+	fi
+	if ((nbchannels>maxchannels)); then
+	    maxchannels=$((nbchannels))
+	    maxname=$c
+	    if ((trace)); then
+		echo -n "Debug: Max="$maxchannels" Name="$maxname
+	    fi
+	fi
+    done
+    if ((maxchannels==0)); then
+	echo "Couldn't find the channel count. Bailing out!"
+	exit 1
+    else
+	echo "Selected "$maxchannels" channels (topology: "$maxname")"
+    fi
+    # select the best encoding for the number of channels
+    encodings=$(ffprobe "$BDMV"/STREAM/$i 2>&1 | grep -e Stream | grep -e Audio | grep $maxname | cut -d, -f 1 | tr -s ' ' | cut -d ' ' -f 5 | sed -e 's/ //g')
+    if ((trace)); then
+	echo -n "Debug: Encoding list: "$encodings
+	echo -n
+    fi
+    # define a map
+    maxmap=""
+    enccount=$(wc -w <<< "$encoding")
+    maxweigth=0
+    for e in $encodings; do
+	weigth=0
+	case "$e" in
+	    "truehd")
+		weigth=7
+		;;
+	    "pcm_bluray")
+		weigth=9
+		;;
+	    "dts")
+		weigth=5
+		;;
+	    "ac3")
+		weigth=3
+		;;
+	    "mp3")
+		weigth=3
+		;;
+	    *)
+		echo "Warning: unkown encoding "$e
+		exit 1
+		;;
+	esac
+	if ((weigth>maxweigth)); then
+	    maxweigth=$((weigth))
+	    maxenc=$e
+	    map=$(ffprobe "$BDMV"/STREAM/$i 2>&1 | grep -e Stream | grep -e Audio | grep $maxname | grep $maxenc | cut -d, -f 1 | tr -s ' ' | cut -d ' ' -f 3 | cut -b 2-4)
+	    maxmap="-map $map"
+	fi
+    done
+    echo -n "Selected encoding: "$maxenc" with "$maxmap
+    echo -n
+    exit 1
+    # encode
+    if ! test -f $OUTDIR/$FLAC; then
+	echo -n $FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap $OUTDIR/$FLAC;
+	$FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap $OUTDIR/$FLAC 2>&1 > "$LOGFILE";
+    else
+	echo "Warning: "$OUTDIR/$FLAC" already exist, skipping!";
+    fi
+done
+
+# concat all required flac files into 1
+ALLFLAC=$OUTDIR/all_flac.flac
+ALLTXT=$OUTDIR/all_flac.txt
+rm -f $ALLTXT
+touch $ALLTXT
+for i in `echo -n $M2TS`; do
+    flacname=${i%.m2ts}.flac
+    # some may be empty or not exist
+    if test -f $OUTDIR/$flacname; then
+	echo "file '"$flacname"'" >> $ALLTXT
+    fi
+done
+# cat $ALLTXT
+
+if ! test -f $ALLFLAC; then
+    echo $FFMPEG -f concat -i $ALLTXT $ALLFLAC
+    $FFMPEG -f concat -i $ALLTXT $ALLFLAC
+fi
+# ls -lsa $ALLFLAC
+
+# split it in chunks
+if test -d $OUTDIR/tracks; then
+    echo "Warning: directory tracks allready exist, skipping!";
+    exit 1
+fi
+if ! test -f $ALLFLAC; then
+    echo "Trackscalpel didn't run because "$ALLFLAC" doesn't exist!"
+    exit 1
+else
+    echo $TRACKSCALPEL -o $OUTDIR/tracks $ALLFLAC $MPLSFILE;
+    $TRACKSCALPEL -o "$OUTDIR"/tracks $ALLFLAC "$MPLSFILE" 2>&1 > "$LOGFILE";
+fi
+
+# done
+echo "Done: flac files are in " $OUTDIR/tracks
+
+#rm -f $ALLTXT
+#rm -f $ALLFLAC
+
+exit 0

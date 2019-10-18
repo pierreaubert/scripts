@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CUE=/tmp/cue.cue
+rm -f [0-9]*.flac
+iconv -f ISO-8859-15 -t utf-8 *.cue > $CUE
+shnsplit -t '%n %t' -f $CUE -o flac *.flac
+rm -f *pregap.flac
+cuetag $CUE [01]*.flac
+rm -f $CUE
+

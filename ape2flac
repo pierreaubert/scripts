@@ -1,0 +1,24 @@
+#!/bin/bash
+
+MAC=/usr/bin/mac
+
+for a in *.ape; do
+    w=${a%.ape}.wav
+    f=${a%.ape}.flac
+    c=${a%.ape}.cue
+    rm -f "$w" "$f"
+    if test -f "${a}"; then
+	echo $MAC -d $"a" $"w"
+	$MAC "$a" "$w" -d
+	flac -f "$w"
+	if test -f "$c"; then
+	    shnsplit -t '%n %t' -f "$c" -o flac "$f";
+	    rm -f *pregap.flac;
+	    cuetag *.cue [0-9]*.flac;
+	fi
+    else
+	echo $0 " can't find " $a
+	exit -1
+    fi
+done
+exit 0					

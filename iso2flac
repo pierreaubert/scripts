@@ -1,0 +1,35 @@
+#!/usr/bin/zsh
+
+if [[ "$#" -ne 1 ]]; then
+   echo "an ISO filename is mandatory"
+   exit 1
+elif [[ ! -a "$1" ]]; then
+   echo "$1 doesn't exist!"
+   exit 1
+fi
+
+sacd -i "$1"
+for w in *.wav; do
+  flac "$w"
+done
+
+for i in *.flac; do
+  channels=$(echo "$i" | cut -c2-4)
+  mkdir -p $channels
+  mv "$i" $channels
+done
+
+for channels in 2ch 5ch 6ch 8ch; do
+  if [[ -d $channels ]]; then
+    cp -f *.jpg *.png *.gif *.pdf $channels
+    for d in Artwork artwork; do
+       if [[ -d $d ]]; then
+         cp $d/* $channels
+       fi
+    done
+  fi
+done
+
+# cleanup
+rm -f *.wav
+
