@@ -177,7 +177,6 @@ for i in `echo -n $M2TS`; do
     done
     echo -n "Selected encoding: "$maxenc" with "$maxmap
     echo -n
-    exit 1
     # encode
     if ! test -f $OUTDIR/$FLAC; then
 	echo -n $FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap $OUTDIR/$FLAC;
