@@ -184,10 +184,10 @@ for i in `echo -n $M2TS`; do
 done
 
 # concat all required flac files into 1
-ALLFLAC=$OUTDIR/all_flac.flac
-ALLTXT=$OUTDIR/all_flac.txt
-rm -f $ALLTXT
-touch $ALLTXT
+ALLFLAC="$OUTDIR"/all_flac.flac
+ALLTXT="$OUTDIR"/all_flac.txt
+rm -f "$ALLTXT"
+touch "$ALLTXT"
 for i in `echo -n $M2TS`; do
     flacname=${i%.m2ts}.flac
     # some may be empty or not exist
@@ -218,8 +218,5 @@ fi
 
 # done
 echo "Done: flac files are in " $OUTDIR/tracks
-
-#rm -f $ALLTXT
-#rm -f $ALLFLAC
 
 exit 0
