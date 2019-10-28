@@ -17,7 +17,7 @@ export LC_ALL=C.UTF-8
 # ffmpeg
 FFMPEG='/usr/bin/ffmpeg -loglevel 16 -hwaccel auto'
 
-# where are your bluray files
+# where are your bluray files ?
 BDMV=$1
 
 if ! test -d "${BDMV}"/PLAYLIST; then
@@ -175,11 +175,11 @@ for i in `echo -n $M2TS`; do
     done
     echo "Selected encoding: "$maxenc" with "$maxmap
     # encode
-    if ! test -f $OUTDIR/$FLAC; then
+    if ! test -f "$OUTDIR/$FLAC"; then
 	echo $FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap $OUTDIR/$FLAC;
-	$FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap $OUTDIR/$FLAC 2>&1 > "$LOGFILE";
+	$FFMPEG -i "${BDMV}"/STREAM/$i -ac $maxchannels $maxmap "$OUTDIR"/$FLAC 2>&1 > "$LOGFILE";
     else
-	echo "Warning: "$OUTDIR/$FLAC" already exist, skipping!";
+	echo "Warning: "$OUTDIR"/"$FLAC" already exist, skipping!";
     fi
 done
 
@@ -191,29 +191,29 @@ touch $ALLTXT
 for i in `echo -n $M2TS`; do
     flacname=${i%.m2ts}.flac
     # some may be empty or not exist
-    if test -f $OUTDIR/$flacname; then
-	echo "file '"$flacname"'" >> $ALLTXT
+    if test -f "$OUTDIR/$flacname"; then
+	echo "file '"$flacname"'" >> "$ALLTXT"
     fi
 done
 # cat $ALLTXT
 
-if ! test -f $ALLFLAC; then
+if ! test -f "$ALLFLAC"; then
     echo $FFMPEG -f concat -i $ALLTXT $ALLFLAC
-    $FFMPEG -f concat -i $ALLTXT $ALLFLAC
+    $FFMPEG -f concat -i "$ALLTXT" "$ALLFLAC"
 fi
 # ls -lsa $ALLFLAC
 
 # split it in chunks
-if test -d $OUTDIR/tracks; then
+if test -d "$OUTDIR"/tracks; then
     echo "Warning: directory tracks allready exist, skipping!";
     exit 1
 fi
-if ! test -f $ALLFLAC; then
+if ! test -f "$ALLFLAC"; then
     echo "Trackscalpel didn't run because "$ALLFLAC" doesn't exist!"
     exit 1
 else
     echo $TRACKSCALPEL -o $OUTDIR/tracks $ALLFLAC $MPLSFILE;
-    $TRACKSCALPEL -o "$OUTDIR"/tracks $ALLFLAC "$MPLSFILE" 2>&1 > "$LOGFILE";
+    $TRACKSCALPEL -o "$OUTDIR"/tracks "$ALLFLAC" "$MPLSFILE" 2>&1 > "$LOGFILE";
 fi
 
 # done
