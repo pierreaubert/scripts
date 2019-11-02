@@ -11,7 +11,7 @@ then
 fi
 
 COMMAND=$1
-if [$COMMAND != "new" && $COMMAND != "ïncremental"]
+if [ "$COMMAND" != "new" -a "$COMMAND" != "incremental" ]
 then
   echo " command " $COMMAND " is unkown";
   exit -1;
@@ -24,10 +24,10 @@ UUID_CLONE=$(diskutil info ${DISK_CLONE}s1 | grep "Volume UUID" | cut -d: -f 2 |
 UUID_ROOT=$(diskutil info ${DISK_ROOT}s1 | grep "Volume UUID" | cut -d: -f 2 | sed 's/ //g')
 
 # sync / to clone
-echo ${RSYNC} -xrlptgoXvHS --progress --fileflags / $CLONE
+echo ${RSYNC} -xrlptgoXvHS --delete --fileflags / $CLONE
 
 # check if UUID of clone exist in Preboot
-if [ $COMMAND == "NEW" ]
+if [ "$COMMAND" == "new" ]
 then
   if ! test -d /Volumes/Preboot; then
     echo diskutil mount ${DISK_CLONE}s2
@@ -51,7 +51,7 @@ fi
 # update PreBoot
 echo diskutil apfs updatePreboot $CLONE
 
-if [ $COMMAND == "NEW" ]
+if [ "$COMMAND" == "new" ]
 then
   # bless 
   echo bless --folder ${CLONE}/System/Library/CoreServices --bootefi
