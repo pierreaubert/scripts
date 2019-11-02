@@ -19,5 +19,5 @@ diskutil mount $EFI_ROOT
 diskutil mount $EFI_CLONE
 
 # sync / to clone
-${RSYNC} -nxrlptgoXvHS --fileflags /Volumes/EFI /Volumes/EFI\ 1/
+${RSYNC} -nxrlptgoXvHS --exclude '*.dontcopy' --delete --fileflags /Volumes/EFI/EFI /Volumes/EFI\ 1/EFI
 
