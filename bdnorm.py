@@ -13,7 +13,8 @@ import glob
 import unicodedata
 import argparse
 
-opts_parser = argparse.ArgumentParser(description='This script will normalize the name of your collection of comics. By default it will just show the proposed names. If you want to force the actual conversion user the force flag.')
+opts_parser = argparse.ArgumentParser(description='This script will normalize the name of your collection of comics. \
+By default it will just show the proposed names. If you want to force the actual conversion user the force flag.')
 opts_parser.add_argument("-f", "--force", help='Rename files', action="store_true")
 opts_parser.add_argument("-d", "--debug", help='add (a lot) of traces', action="store_true")
 opts_parser.add_argument("directory", help="Directory where the comics are")
@@ -119,9 +120,9 @@ class ParseSpecial1(ParserForNumber):
         if split:
             if len(split.groups()) == 1:
                 # easy case
-                if opts.debug: 
+                if opts.debug:
                     print(('opts.debug: {0}'.format(split.groups())))
-                if opts.debug: 
+                if opts.debug:
                     print(('opts.debug: from {0} to {1}'.format(split.start(), split.end())))
                 # be careful -1 here because of a leading space
                 self.parsed[0] = self.bdname[0:split.start()-1]
@@ -142,7 +143,7 @@ class ParseSpecial2(ParserForNumber):
     """
     lookup for this special synthax
             - 023#045 -
-    this one is complicated because it also match a series with a trailing 
+    this one is complicated because it also match a series with a trailing
     number followed by the tome number
     by checking first we simplify greatly the main regexp
     """
@@ -188,10 +189,10 @@ class ParseSpecialOf(ParserForNumber):
         reg = re.compile(regspec, re.IGNORECASE | re.VERBOSE)
         split = reg.search(self.bdname)
         if split:
-            l = len(split.groups())
+            l1 = len(split.groups())
             if opts.debug:
-                print(('opts.debug: ParseSpecialOf: len={0} groups={1}'.format(l, split.groups())))
-            if l == 1:
+                print(('opts.debug: ParseSpecialOf: len={0} groups={1}'.format(l1, split.groups())))
+            if l1 == 1:
                 # easy case
                 if opts.debug:
                     print(('opts.debug: ParseSpecialOf: from {0} to {1}'.format(split.start(), split.end())))
@@ -202,10 +203,10 @@ class ParseSpecialOf(ParserForNumber):
                 if opts.debug:
                     print(('opts.debug: ParseSpecialOf: {0}'.format(self.parsed[0])))
                 return True, self.parsed
-            else: 
+            else:
                 # two groups of number or more
                 # to be dealt with later
-                print(('ko ParseSpecialOf {0} groups or more in reg - N#P -'.format(l)))
+                print(('ko ParseSpecialOf {0} groups or more in reg - N#P -'.format(l1)))
             return False, self.parsed
 
         if opts.debug:
@@ -222,7 +223,7 @@ class ParseSpecialHS(ParserForNumber):
         reg = re.compile(regsep + reghs + regsep, re.IGNORECASE | re.VERBOSE)
         split = reg.search(self.bdname)
         # positive case, we have 1 match only
-        if split :
+        if split:
             if len(split.groups()) == 3:
                 # easy case
                 if opts.debug:
@@ -236,16 +237,16 @@ class ParseSpecialHS(ParserForNumber):
                     self.parsed[1] = split.group('hs')
                 self.parsed[2] = self.bdname[split.end():]
                 return True, self.parsed
-            else: 
+            else:
                 # two groups of number or more
                 # to be dealt with later
                 print(('ko {0} groups or more in hs'.format(len(split.groups()))))
-                return False, self.parsed;
+                return False, self.parsed
 
         if opts.debug:
             print('opts.debug: ParseSpecialHS split do not match on - HS n - ')
         return False, self.parsed
-        
+
 
 class ParseNormalCase(ParserForNumber):
     """
@@ -260,27 +261,28 @@ class ParseNormalCase(ParserForNumber):
         # positive case, we have 1 match only
         if split1:
             # check if we have more than one number
-            split11 = reg1.search(self.bdname[ split1.end(): ])
+            split11 = reg1.search(self.bdname[split1.end():])
             if split11:
                 # aie: difficult to guess which one is the good one, try the longuest one or one with a prefix
                 if opts.debug:
-                    print(('opts.debug: ParseNormalCase: 2 matches: ({0}) and ({1})'.format(split1.group(0),split11.group(0))))
+                    print(('opts.debug: ParseNormalCase: 2 matches: ({0}) and ({1})'.format(split1.group(0),
+                                                                                            split11.group(0))))
                 # first look for prefix like Tome+Vol to mark the "good" one
                 # count non digit in splits
                 c1 = 0
                 for ch in split1.group(0):
-                    if not ch in "0123456789 ":
+                    if ch not in "0123456789 ":
                         c1 += 1
                 c11 = 0
                 for ch in split11.group(0):
-                    if not ch in "0123456789 ":
+                    if ch not in "0123456789 ":
                         c11 += 1
                 # heuristic more non digit means more likely it is the central number
                 if opts.debug:
-                    print(('opts.debug: ParseNormalCase: 2 matches: take the longuest ({0},{1})'.format(c1,c11)))
+                    print(('opts.debug: ParseNormalCase: 2 matches: take the longuest ({0},{1})'.format(c1, c11)))
                 if c11 > c1:
                     split1 = split11
-    
+
             if len(split1.groups()) == 1:
                 # easy case
                 if opts.debug:
@@ -289,23 +291,23 @@ class ParseNormalCase(ParserForNumber):
                 self.parsed[1] = split1.group('number')
                 self.parsed[2] = self.bdname[split1.end():]
                 return True, self.parsed
-            else: 
+            else:
                 # two groups of number or more
                 # to be dealt with later
                 print('ko 2 groups or more')
-                return False, self.parsed;
-    
+                return False, self.parsed
+
         if opts.debug:
             print('opts.debug: ParseNormalCase: split do not match normal number scheme')
         return False, self.parsed
-        
+
 
 class ParseNumberSerieTitle(ParserForNumber):
     """
     lookup for number sep serie sep title
     """
-    def parse(self, hint_series = None):
-        # different from \w 
+    def parse(self, hint_series=None):
+        # different from \w
         words = '([A-z][A-z0-9]*)'
         regserie = r"""(?P<serie>{words}+(\s{words})*)""".format(words=words)
         regtitle = r"""(?P<title>{words}(\s{words})*)""".format(words=words)
@@ -316,40 +318,40 @@ class ParseNumberSerieTitle(ParserForNumber):
 
         # positive case, we have 1 match only
         if split1:
-            l = len(split1.groups())
+            l1 = len(split1.groups())
             if opts.debug:
-                print(('opts.debug: ParseNumberSerieTitle: len={0} groups={1}'.format(l, split1.group())))
-                for i,n in enumerate(split1.groups()):
-                    print(('opts.debug: ParseNumberSerieTitle: i={0} group={1}'.format(i,n)))
+                print(('opts.debug: ParseNumberSerieTitle: len={0} groups={1}'.format(l1, split1.group())))
+                for i, n in enumerate(split1.groups()):
+                    print(('opts.debug: ParseNumberSerieTitle: i={0} group={1}'.format(i, n)))
             if len(split1.groups()) == 9:
                 # easy case
                 self.parsed[0] = split1.group('serie')
-                if len(self.parsed[0])==1 and self.parsed[0][0] in ('_','-'):
+                if len(self.parsed[0]) == 1 and self.parsed[0][0] in ('_', '-'):
                     # grrr this is another case
                     if opts.debug:
                         print(('opts.debug: ParseNumberSerieTitle: failed series cannot be: {0}'.format(self.parsed[0])))
                     return False, self.parsed
                 self.parsed[1] = split1.group('number')
                 self.parsed[2] = split1.group('title')+'.'+self.bdname[split1.end():]
-                if len(self.parsed[2])==1 and self.parsed[2][0] in ('_','-'):
+                if len(self.parsed[2]) == 1 and self.parsed[2][0] in ('_', '-'):
                     # grrr this is another case
                     if opts.debug:
                         print(('opts.debug: ParseNumberSerieTitle: failed title cannot be: {0}'.format(self.parsed[2])))
-                    return False, self.parsed;
+                    return False, self.parsed
                 if opts.debug:
                     print(('opts.debug: ParseNumberSerieTitle: serie={0} number={1} title={2}'.format(
                         self.parsed[0], self.parsed[1], self.parsed[2])))
                 return True, self.parsed
-            else: 
+            else:
                 # two groups of number or more
                 # to be dealt with later
                 print('ko 2 groups or more')
-                return False, self.parsed;
-    
+                return False, self.parsed
+
         if opts.debug:
             print('opts.debug: ParseNumberSerieTitle: split do not match normal number scheme')
         return False, self.parsed
-        
+
 
 class ParseNoSerie(ParserForNumber):
     """
@@ -359,19 +361,19 @@ class ParseNoSerie(ParserForNumber):
         # we do not find it: possibly we have no serie
         reg = re.compile(self.regtome + self.regnumber + regsep, re.VERBOSE)
         split = reg.search(self.bdname)
-    
+
         # no serie
         if split:
             if len(split.groups()) == 1:
                 self.parsed[1] = split.group('number')
                 self.parsed[2] = self.bdname[split.end():]
                 return True, self.parsed
-    
+
         if opts.debug:
             print('opts.debug: ParseNoSerie: split do not match no serie')
-    
+
         return False, self.parsed
-        
+
 
 class ParseNoTitle(ParserForNumber):
     """
@@ -380,10 +382,10 @@ class ParseNoTitle(ParserForNumber):
     def parse(self):
         reg3 = re.compile(regsep + self.regtome + self.regnumber,  re.VERBOSE)
         split3 = reg3.search(self.bdname)
-    
+
         # no title
         if split3:
-            l3 = len(split3.groups());
+            l3 = len(split3.groups())
             if l3 == 1:
                 self.parsed[0] = self.bdname[0:split3.start()]
                 self.parsed[1] = split3.group('number')
@@ -394,11 +396,11 @@ class ParseNoTitle(ParserForNumber):
             else:
                 if opts.debug:
                     print(('opts.debug: ParseNoTitle: 1 != {0}'.format(l3)))
-            
+
         if opts.debug:
             print('opts.debug: ParseNoTitle split do not match on no title')
         return False, self.parsed
-        
+
 
 class ParseNumberOnly(ParserForNumber):
     """
@@ -407,10 +409,10 @@ class ParseNumberOnly(ParserForNumber):
     def parse(self):
         reg3 = re.compile(self.regtome + self.regnumber,  re.VERBOSE)
         split3 = reg3.search(self.bdname)
-    
+
         # no title
         if split3:
-            l3 = len(split3.groups());
+            l3 = len(split3.groups())
             if l3 == 1:
                 self.parsed[0] = self.bdname[0:split3.start()]
                 self.parsed[1] = split3.group('number')
@@ -421,16 +423,16 @@ class ParseNumberOnly(ParserForNumber):
             else:
                 if opts.debug:
                     print(('opts.debug: ParseNumberOnly: 1 != {0}'.format(l3)))
-            
+
         if opts.debug:
             print('opts.debug: ParseNumberOnly: split do not match on no title')
         return False, self.parsed
-        
+
 
 def normalize_number(bdname):
     """ look for number and return 3 parts before, number, after
     """
-    parsed = ['', '','' ]
+    parsed = ['', '', '']
 
     # try to eliminate some pattern wich complicate things later on
     # case of "1 of 3" at the end
@@ -444,29 +446,37 @@ def normalize_number(bdname):
     # try to eliminate some pattern wich complicate things later on
     # case: n # m
     status, parsed = ParseSpecial1(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # case: 01#02
     status, parsed = ParseSpecial2(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # case: HS01
     status, parsed = ParseSpecialHS(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
 
     # normal cases
     status, parsed = ParseNormalCase(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # try rare pattern longest first
     status, parsed = ParseNumberSerieTitle(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # miss something?
     status, parsed = ParseNoTitle(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # miss something?
     status, parsed = ParseNoSerie(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
     # miss something?
     status, parsed = ParseNumberOnly(bdname).parse()
-    if status: return parsed
+    if status:
+        return parsed
 
     if opts.debug:
         print(('ko do not find a number in {0}'.format(bdname)))
@@ -484,20 +494,20 @@ def normalize_pre_number(text):
     # or a combinaison of above
     regbdfr1 = """\[?BD[\s.-]?[Ff][Rr]\]"""
     regbdfr2 = """BD[.]FR[.]"""
-    regbdfr = r"""({0}(\s+{1})?)|({1}(\s+{0})?)""".format(regbdfr1,regbdfr2)
+    regbdfr = r"""({0}(\s+{1})?)|({1}(\s+{0})?)""".format(regbdfr1, regbdfr2)
     reg1 = re.compile(regbdfr + regsep, re.VERBOSE)
     split1 = reg1.search(text)
-        
+
     # good case
     if split1:
-        end = split1.end();
+        end = split1.end()
         # remove some . if any
-        while(text[end] in ('.','-',' ')):
-              end = end+1
-        parsed[0]  = text[end:]
+        while(text[end] in ('.', '-', ' ')):
+            end = end+1
+        parsed[0] = text[end:]
     else:
         parsed[0] = text
-    
+
     # look for stopwords between () at end of text
     # ex:
     #   toto titi (le) -> le.toto.titi
@@ -505,13 +515,13 @@ def normalize_pre_number(text):
     reg2 = re.compile(regparen, re.IGNORECASE | re.VERBOSE)
     split2 = reg2.search(parsed[0])
     if split2:
-        l = len(split2.groups())
-        if l == 1 and split2.group('stp').lower() in stopwords:
+        l2 = len(split2.groups())
+        if l2 == 1 and split2.group('stp').lower() in stopwords:
             if opts.debug:
                 print(('debug: normalize_pre_number: group={0}'.format(split2.groups())))
             # of we have found a stopwords at the (end)
             parsed[0] = split2.group('stp')+' '+parsed[0][:split2.start()-1]
-            
+
     return parsed
 
 
@@ -524,14 +534,14 @@ def normalize_post_number(text):
     regsuffix = r"""([.](?P<suffix>(pdf|cbz|cbr|zip|rar)))"""
 
     parsed = ['', '']
-    
+
     # look for suffix
     reg1 = re.compile(regsuffix, re.VERBOSE)
     split1 = reg1.search(text)
-        
+
     # good case
     if split1:
-        parsed[0]  = text[0:split1.start()]
+        parsed[0] = text[0:split1.start()]
         parsed[1] = split1.group('suffix')
 
     # look for author names or date in title
@@ -539,14 +549,15 @@ def normalize_post_number(text):
     split2 = reg2.search(parsed[0])
 
     if split2:
-       # remove author but not 
-       if opts.debug:
-           print(('opts.debug: normalize_post_number: find author {0}'.format(split2.group('author'))))
-           print(('opts.debug: normalize_post_number: parsed0 is {0}'.format(parsed[0])))
-           print(('opts.debug: normalize_post_number: split2 is from {0} to {1}'.format(split2.start(), split2.end())))
-       # if title is empty or it is the only information 
-       translation_table = dict.fromkeys(list(map(ord, '()-.[]{}')), None)
-       parsed[0] = parsed[0].translate(translation_table)
+        # remove author but not
+        if opts.debug:
+            print(('opts.debug: normalize_post_number: find author {0}'.format(split2.group('author'))))
+            print(('opts.debug: normalize_post_number: parsed0 is {0}'.format(parsed[0])))
+            print(('opts.debug: normalize_post_number: split2 is from {0} to {1}'.format(split2.start(), split2.end())))
+
+        # if title is empty or it is the only information
+        translation_table = dict.fromkeys(list(map(ord, '()-.[]{}')), None)
+        parsed[0] = parsed[0].translate(translation_table)
 #       if len(parsed[0]) > (split2.end()-split2.start()-1):
 #          # remove leading and trailing .(\s
 #          left_shift = 1
@@ -563,7 +574,7 @@ def format_name(s):
     """proposed final name
     apply a few rules
     """
-    
+
     result = ''
 
     # if we have a number
@@ -583,12 +594,12 @@ def format_name(s):
         else:
             result = result + '_{:02d}'.format(int(s[2]))
 
-        # add title if not empty    
+        # add title if not empty
         if len(s[3]) > 0:
             # result = result + '_{:s}'.format(s[3])
             result = result + '_' + s[3]
 
-        # add suffix   
+        # add suffix
         result = result + '.' + s[4]
 
     return result
@@ -599,9 +610,8 @@ def normalize_file(text):
     call normalize_file
     parse input and return a list with the different parts
     """
-    
     (dirname, bookname) = os.path.split(text)
-            
+
     if opts.debug:
         print('--------------------------------------------------')
     if opts.debug:
@@ -614,7 +624,7 @@ def normalize_file(text):
     if opts.debug:
         print(('ok parsenumber return [{0}], [{1}], [{2}]'.format(
             parsed1[0], parsed1[1], parsed1[2])))
-    
+
     parsed2 = normalize_pre_number(parsed1[0])
     if opts.debug:
         print(('ok parsePreNumber return [{0}]'.format(
@@ -622,13 +632,13 @@ def normalize_file(text):
 
     parsed3 = normalize_post_number(parsed1[2])
     if opts.debug:
-        print(('ok parsePostNumber return [{0}], [{1}]'.format(parsed3[0],parsed3[1])))
+        print(('ok parsePostNumber return [{0}], [{1}]'.format(parsed3[0], parsed3[1])))
 
     # first is empty for now
     if opts.debug:
         print(('ok {0} pretty {1}'.format(parsed3[0], pretty(parsed3[0]))))
     return [dirname, pretty(parsed2[0]), parsed1[1], pretty(parsed3[0]), parsed3[1]]
-    
+
 
 def normalize_directory(current):
     """ normalize all files in a directory """
@@ -661,7 +671,7 @@ if __name__ == '__main__':
     opts = opts_parser.parse_args()
 
     # some traces
-    if opts.debug: 
+    if opts.debug:
         print(stopwords)
 
     # be careful with the locale
@@ -673,5 +683,5 @@ if __name__ == '__main__':
     else:
         print(('{0} is not a directory'.format(opts.directory)))
         sys.exit(1)
-            
+
     sys.exit(0)
