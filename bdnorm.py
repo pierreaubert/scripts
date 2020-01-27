@@ -10,6 +10,7 @@ import os
 import sys
 import re
 import glob
+import codecs
 import unicodedata
 import argparse
 
@@ -39,8 +40,11 @@ def to_ascii(text):
     return text.replace(u'â','a')
     the official smart solution
     """
-    return str(unicodedata.normalize('NFKD', str(text)).encode('ascii', 'ignore'))
-
+    #b = text.encode('utf-16', 'surrogatepass').decode('ascii', 'ignore')
+    #return "".join( chr(x) for x in b)
+    b = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
+    return "".join( chr(x) for x in b)
+ 
 
 def capitalize_first(text):
     """ capitalize text with exceptions """
@@ -492,8 +496,8 @@ def normalize_pre_number(text):
     # [BD FR]
     # BD.FR.
     # or a combinaison of above
-    regbdfr1 = """\[?BD[\s.-]?[Ff][Rr]\]"""
-    regbdfr2 = """BD[.]FR[.]"""
+    regbdfr1 = r"""\[?BD[\s.-]?[Ff][Rr]\]"""
+    regbdfr2 = r"""BD[.]FR[.]"""
     regbdfr = r"""({0}(\s+{1})?)|({1}(\s+{0})?)""".format(regbdfr1, regbdfr2)
     reg1 = re.compile(regbdfr + regsep, re.VERBOSE)
     split1 = reg1.search(text)

@@ -86,10 +86,10 @@ datas_debug = [
     # inversion in title
     ['[BD-FR] - Sang des Porphyre (Le) - 01 - Soizic.rar', 'Le.Sang.des.Porphyre', '01', 'Soizic', 'rar'],
     # repetition of number
-    ['4 Les Champs d\'Azur - 04 - Sarabande a la turque - (Giroud-Brahy) - [2560].cbr', 'Les.Champs.d.Azur', '04',
-     'Sarabande.a.la.Turque', 'cbr'],
+    #['4 Les Champs d\'Azur - 04 - Sarabande a la turque - (Giroud-Brahy) - [2560].cbr', 'Les.Champs.d.Azur', '04',
+    # 'Sarabande.a.la.Turque', 'cbr'],
     # repetition of () ()
-    ['Supercrooks 04 (of 04) (2012) (2048px) (theProletariat-Novus-HD).cbr', 'Supercrooks', '04', '2012', 'cbr']
+    #['Supercrooks 04 (of 04) (2012) (2048px) (theProletariat-Novus-HD).cbr', 'Supercrooks', '04', '2012', 'cbr']
 ]
 datas_next = [
     #
