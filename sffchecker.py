@@ -111,7 +111,7 @@ def scan(author_link):
     author = author_link['sff'].strip()
     author_dir = dir_sffupdate+'/'+author
     if not os.path.isdir(author_dir):
-        print(u'author is incorrect: directory {0} doesn\'t exist!'.format(author_dir))
+        print(('author is incorrect: directory {0} doesn\'t exist!'.format(author_dir)))
         return []
     ll = []
     for f in glob.glob(dir_sffupdate+'/'+author+'/*'):
@@ -134,14 +134,14 @@ def display_linear(status_title):
         status = l[0]
         title = l[1]
         if status:
-            print('    {0}'.format(display_book(C_GREEN, title)))
+            print(('    {0}'.format(display_book(C_GREEN, title))))
         else:
-            print('    {0}'.format(display_book(C_BLUE, title)))
+            print(('    {0}'.format(display_book(C_BLUE, title))))
 
 def iter_group_on_title(dtitle):
     r = None
     if opts.debug: 
-        print('(debug) {0}'.format(str(dtitle)))
+        print(('(debug) {0}'.format(str(dtitle))))
     dot   = dtitle['title'].split('.')
     sharp = dot[0].split('#')
     if len(sharp) == 2:
@@ -203,10 +203,10 @@ def iter_group_on_collection(status_title):
         return '__none__'
     elif l > 2:
         if opts.debug: 
-            print('(debug) |{0}| and |{1}|'.format(splitted[1], remove_last_number(splitted[1])))
+            print(('(debug) |{0}| and |{1}|'.format(splitted[1], remove_last_number(splitted[1]))))
         return remove_last_number(splitted[1])
     else:
-        print('(error) splitted len\'s={0} for {1}, don\'t know what to do!'.format(l, title))
+        print(('(error) splitted len\'s={0} for {1}, don\'t know what to do!'.format(l, title)))
 
 
 def group_by_collection(status_title):
@@ -230,7 +230,7 @@ def group_by_collection(status_title):
                 'status': status,
             })
         if opts.debug: 
-            print('(debug) collection {0} titles {1}'.format(collection, str(titles)))
+            print(('(debug) collection {0} titles {1}'.format(collection, str(titles))))
         groups.append({
             'collection': collection,
             'titles': group_by_title(titles),
@@ -262,9 +262,9 @@ def display_grouped(status_title):
             else:
                 title = '{0}.({1})'.format(raw_title['title'], '|'.join(raw_title['suffix']))
             if raw_title['status']:
-                print('          {0}'.format(display_book(C_GREEN, title)))
+                print(('          {0}'.format(display_book(C_GREEN, title))))
             else:
-                print('          {0}'.format(display_book(C_BLUE, title)))
+                print(('          {0}'.format(display_book(C_BLUE, title))))
 
 
     if cnt_series > 0:                
@@ -279,7 +279,7 @@ def display_grouped(status_title):
                     cnt_new += 1
                 else:
                     cnt_upd += 1
-            print(u'''    - {0} ({1} new + {2} update)'''.format(collection,cnt_new, cnt_upd))
+            print(('''    - {0} ({1} new + {2} update)'''.format(collection,cnt_new, cnt_upd)))
             for raw_title in group['titles']:
                 title = None
                 if len(raw_title['suffix']) == 1:
@@ -287,20 +287,20 @@ def display_grouped(status_title):
                 else:
                     title = '{0}.({1})'.format(raw_title['title'], '|'.join(raw_title['suffix']))
                 if raw_title['status']:
-                    print(u'''        - {green}NEW{normal} - {number} - {title}'''.format(green=C_GREEN,
+                    print(('''        - {green}NEW{normal} - {number} - {title}'''.format(green=C_GREEN,
                                                                                           normal=C_NORMAL,
                                                                                           number=raw_title['number'],
-                                                                                          title=title))
+                                                                                          title=title)))
                 else:
-                    print(u'''        - {blue}UPD{normal} - {number} - {title}'''.format(blue=C_BLUE,
+                    print(('''        - {blue}UPD{normal} - {number} - {title}'''.format(blue=C_BLUE,
                                                                                          normal=C_NORMAL,
                                                                                          number=raw_title['number'],
-                                                                                         title=title))
+                                                                                         title=title)))
             
 
 def display(author_link, option):
     author = author_link['sff'].strip()
-    print(u'{red}{author}{normal}'.format(red=C_RED, normal=C_NORMAL, author=author))
+    print(('{red}{author}{normal}'.format(red=C_RED, normal=C_NORMAL, author=author)))
     status_title = scan(author_link)
     if option == 'linear':
         display_linear(status_title)
@@ -366,7 +366,7 @@ def normalize_author(calibre_author):
     name = ' '.join(name.split())
     parts = name.split(' ')
     if opts.debug: 
-        print(u'(debug) "{0}" {1} parts'.format(name, len(parts)))
+        print(('(debug) "{0}" {1} parts'.format(name, len(parts))))
     if len(parts) == 1:
         return [name.title()]
     elif len(parts) == 2:
@@ -398,7 +398,7 @@ def normalize_author(calibre_author):
             second_sff = '. '.join(initiales)
         nom = parts[-1].title()
         if opts.debug: 
-            print(u'(debug) prenom={0} nom={1}'.format(prenom, nom))
+            print(('(debug) prenom={0} nom={1}'.format(prenom, nom)))
         if len(parts) == 3:
             if second == second_sff:
                 return ['{0} {1}'.format(prenom, nom),
@@ -479,7 +479,7 @@ def normalize_authors(calibre_authors):
         guesses = [normalize_author(a) for a in authors]
         results = [g for gs in guesses for g in gs]
     if opts.debug: 
-        print(u'(debug) "{0} [{1}]"'.format(calibre_authors, ', '.join(results)))
+        print(('(debug) "{0} [{1}]"'.format(calibre_authors, ', '.join(results))))
     return results
 
 
@@ -494,11 +494,11 @@ def lookup_match_authors(d_calibre, d_sff):
             sff = inter.intersection(d_sff)
             exact_authors.append({'calibre': a, 'sff': sff.pop()})
             if opts.debug: 
-                print('(debug) {0} match {1}'.format(a, sa[0]))
+                print(('(debug) {0} match {1}'.format(a, sa[0])))
         else:
             notfound_authors.append(a)
             if opts.debug: 
-                print('(debug) {0} -> {1} doesnt match'.format(a, ' '.join(sa)))
+                print(('(debug) {0} -> {1} doesnt match'.format(a, ' '.join(sa))))
     return exact_authors, notfound_authors
 
 
@@ -518,8 +518,8 @@ if __name__ == '__main__':
 
     exact_authors, notfound_authors = lookup_match_authors(d_calibre, d_sff)
 
-    print('{0} authors in Calibre, {1} authors in new sff update, found {2} authors in both'\
-          .format(len(d_calibre), len(d_sff), len(exact_authors)))
+    print(('{0} authors in Calibre, {1} authors in new sff update, found {2} authors in both'\
+          .format(len(d_calibre), len(d_sff), len(exact_authors))))
     if opts.debug: 
         print(notfound_authors)
 
