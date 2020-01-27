@@ -34,3 +34,8 @@ backup my Mojave partition to another disk
 ## bdnorm
 
 takes a directory with comics books inside and propose new names in a consistent manner
+
+## sffchecker
+
+takes 2 directories: first one is the Calibre library directory and the second one is the SFF directory. Then for each author in the Calibre library, it will display a list of Books from the SFF updates that you may be interested in.
+
