@@ -72,10 +72,11 @@ fi
 # extract in order all m2ts from the MPLS file
 M2TS=$($MPLS_DUMP -vl "$MPLSFILE" | grep -o -e '[[:space:]]*[0-9]*[.]m2ts')
 if ((trace)); then
+   echo "Debug: M2TS "$MPLS_DUMP -vl "$MPLSFILE"
    echo "Debug: M2TS"$M2TS
 fi
 if test -z "$M2TS"; then
-    echo "Coun't extract list of M2TS files!"
+    echo "Couldn't extract list of M2TS files!"
     exit 1
 fi
 echo "Longest mpls is " $MPLS " with " $M2TS "files."
