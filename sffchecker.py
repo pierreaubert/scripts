@@ -230,7 +230,7 @@ def iter_group_on_collection(status_title):
     l = len(splitted)
     if l == 2:
         return "__none__"
-    elif l == 3:
+    elif l >= 3 and l<=7:
         if opts.debug:
             print(
                 (
@@ -240,16 +240,6 @@ def iter_group_on_collection(status_title):
                 )
             )
         return remove_last_number(splitted[1])
-    elif l == 4:
-        if opts.debug:
-            print(
-                (
-                    "(debug) |{0}| and |{1}|".format(
-                        splitted[1], remove_last_number(splitted[1])
-                    )
-                )
-            )
-        return splitted[1].strip()
     else:
         print(
             (
