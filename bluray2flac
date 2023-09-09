@@ -9,13 +9,30 @@ trace=1
 MPLS_DUMP=$HOME/src/libbluray/.libs/mpls_dump
 
 # trackscalpel
-TRACKSCALPEL=trackscalpel
+TRACKSCALPEL=$(which trackscalpel)
 
 # to prevent some locale issues
 export LC_ALL=C.UTF-8
 
 # ffmpeg
-FFMPEG='/usr/bin/ffmpeg -loglevel 16 -hwaccel auto'
+FFMPEG_BIN=$(which ffmpeg)
+FFMPEG_OPT="-loglevel 16 -hwaccel auto"
+FFMPEG="${FFMPEG_BIN} ${FFMPEG_OPT}"
+
+echo "MPLS:         " ${MPLS_DUMP}
+echo "TRACKSCALPEL: " ${TRACKSCALPEL}
+echo "FFMPEG:       " ${FFMPEG_BIN}
+
+for exe in "${MPLS_DUMP}" "$TRACKSCALPEL" "${FFMPEG_BIN}"; do
+    if ! test -f "$exe"; then
+        echo "$exe is not found!"
+        exit 1
+    fi
+    if ! test -x "$exe"; then
+        echo "$exe is not executable!"
+        exit 1
+    fi
+done
 
 # where are your bluray files ?
 BDMV=$1
