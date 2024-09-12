@@ -1,0 +1,12 @@
+[Unit]
+Description=Komga Service is an ebook reader
+After=network-online.target
+
+[Service]
+StandardOutput=journal
+ExecStart=/usr/bin/java -jar /home/pierre/bin/komga-1.11.3.jar --server.port=8443
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
