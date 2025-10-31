@@ -47,8 +47,8 @@ opts_parser.add_argument(
 )
 opts = None
 
-dir_calibre = "{home}/Documents/Books/Calibre".format(home=os.environ["HOME"])
-dir_sffupdate = "{home}/sff".format(home=os.environ["HOME"])
+dir_calibre = '{home}/Documents/Books/Calibre/Pierre'.format(home=os.environ['HOME'])
+dir_sffupdate = '/Volume/media/books/sff' # '{home}/sff'.format(home=os.environ['HOME'])
 
 # a re for looking for initials
 pattern_initiales = re.compile(r"([A-Z](\.|_| ))+")
